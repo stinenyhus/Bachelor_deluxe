@@ -15,6 +15,8 @@ source("functions/Normalize_function.R")
 source("functions/cv_functions.R")
 source("functions/feature_selection.R")
 source("functions/clean_column_function.R")
+source("functions/correct_id.R")
+source("functions/combine_dfs.R")
 ```
 
 Loading data
@@ -28,56 +30,58 @@ gemaps_us  <- read_csv("gemaps_us.csv")
 demodata   <- read_csv("DemoData.csv")
 ```
 
-Filter out the required story type and make appropriate sets 
-```{r}
-
-###Fill in###
-
-features %>% select(ID) %>% mutate(ID_letter = str_extract(ID, "[A-Z]+"))
-features %>% select(ID) %>% mutate(ID_number = str_extract(ID, "[0-9]*"))
-```
-
-
 The grand function to run
 ```{r}
 grand_function <- function(feature_dataframe, 
+                           other_dataframe,
                            demo_dataframe, 
-                           language, 
+                           lang, 
+                           task,
                            featureset, 
                            n_lasso_folds = 5){
-  set.seed(2020)
-  ###Getting the correct dataframes###
-  features <- feature_dataframe %>% select(-name)
-  demo <- demo_dataframe %>% filter(language == language)
-  
-  ###Cleaning the data###
-  features <- features %>% 
-  mutate(
-   ID = as.character(ID),  #Making ID character
-    ID_letter = str_extract(ID, "[A-Z]+"), #extracting letters from ID name
-    ID_number = str_extract(ID, "[0-9]*")  #extracting numbers from ID name
-  )
+  set.seed(2021)
+  ###Getting the correct dataframe###
+  features <- feature_dataframe %>%  select(-name)
 
-  features <- features %>% 
-    unite(ID, ID_letter:ID_number, sep = "") 
+  ###Cleaning the data###
   
-  ###removing missing ID from demodata for danish datasets###
-  if (language == "dk"){
+  #ID
+  if (lang == "dk"){
+    demo <- demo_dataframe %>% filter(language == "dk")
+    features <- features %>% 
+  mutate(ID = as.character(str_extract(ID, "[0-9]*")))
+    
   demo <- demo %>% subset(ID != "103"& ID != "104"& ID !="105"& ID !="111"& ID !="114")
   }
+  if (lang == "us"){
+    demo <- demo_dataframe %>% filter(language == "us")
+    features <- features %>% 
+  mutate(
+   ID = as.character(ID),  #Making ID character
+   ID_letter = str_extract(ID, "[A-Z]+"), #extracting letters from ID name
+   ID_number = str_extract(ID, "[0-9]*"))  #extracting numbers from ID name
+   
+  features$ID_letter <- ifelse(is.na(features$ID_letter), "", features$ID_letter)
+   
+  features <- features %>% 
+    unite(ID, ID_letter:ID_number, sep = "") 
+  }
+  
   
   ###partitioning###
-  if (language == "dk"){
+  if (lang == "dk"){
     partitions <- partition_dk(features = features, 
                                demo = demo)
   }
-  if (language == "us"){
+  if (lang == "us"){
     partitions <- partition_us(features = features,
                                demo = demo)
   }
    
   train <- partitions[[2]]
+  train$ID <- as.character(train$ID)
   hold_out <- partitions[[1]]
+  hold_out$ID <- as.character(hold_out$ID)
 
   #normalizing - scale_function takes min and max of all columns in train and subtracts min from all   values in each columns and divides by max value to get the empirically scaled columns
   train_scaled <- as.data.frame(
@@ -88,82 +92,82 @@ grand_function <- function(feature_dataframe,
                  hold_out, 
                  datatype = "test"))
   
-  ###Combining demo and feature-set values###
-  train_scaled <- train_scaled %>% #combining demodata and features
-  left_join(demo, 
-            by = "ID") %>% 
+  other_dataframe <- other_dataframe %>% select(-name)
+  if (lang != "dk"){
+    other_dataframe <- other_dataframe %>% 
+  mutate(ID = as.character(str_extract(ID, "[0-9]*")))
+    
+  demo <- demo %>% subset(ID != "103"& ID != "104"& ID !="105"& ID !="111"& ID !="114")
+  }
+    if (lang != "us"){
+    other_dataframe <- other_dataframe %>% 
   mutate(
-    Diagnosis = as.factor(Diagnosis),
-    Gender = as.factor(Gender)#changing diagnosis column to factor
-  )  %>% 
-  select( #we will not use any of the descriptive columns in the analysis and remove them from the dataset 
-  -c(X1,
-    condition,
-    frameTime, 
-    language, 
-    country, 
-    feature_set, 
-    story_type,
-    Age,
-    AdosCreativity,
-    AdosSocial,
-    AdosStereotyped,
-    AdosCommunication,
-    TIQ,
-    PIQ,
-    VIQ,
-    SRS,
-    PPVT,
-    ParentalEducation,
-    CARS,
-    Leiter
-     ))
+   ID = as.character(ID),  #Making ID character
+   ID_letter = str_extract(ID, "[A-Z]+"), #extracting letters from ID name
+   ID_number = str_extract(ID, "[0-9]*")  #extracting numbers from ID name
+  )
+  other_dataframe$ID_letter <- ifelse(is.na(other_dataframe$ID_letter), "", 
+                                      other_dataframe$ID_letter)
+  other_dataframe <- other_dataframe %>% 
+    unite(ID, ID_letter:ID_number, sep = "") 
+  }
+  other_dataframe$ID <- as.character(other_dataframe$ID)
+  other_dataframe$trial <- as.character(other_dataframe$trial)
+  train$trial <- as.character(train$trial)
+  
+  hold_out_other_scaled <- as.data.frame(
+  scale_function(train, 
+                 other_dataframe, 
+                 datatype = "test"))
 
-  hold_out_scaled <- hold_out_scaled %>% #combining demodata and features
-  left_join(demo, 
-            by = "ID") %>% 
-  mutate(
-    Diagnosis = as.factor(Diagnosis),
-    Gender = as.factor(Gender)#changing diagnosis column to factor
-  )  %>% 
-  select( #we will not use any of the descriptive columns in the analysis and remove them from the dataset 
-  -c(X1,
-    condition,
-    frameTime, 
-    language, 
-    country, 
-    feature_set, 
-    story_type,
-    Age,
-    AdosCreativity,
-    AdosSocial,
-    AdosStereotyped,
-    AdosCommunication,
-    TIQ,
-    PIQ,
-    VIQ,
-    SRS,
-    PPVT,
-    ParentalEducation,
-    CARS,
-    Leiter
-     ))
   
-  
+  ###Combining demo and feature-set values###
+  train_scaled <- combined_data(data = train_scaled, demo = demo)
+  print(train_scaled)
+  hold_out_scaled <- combined_data(data = hold_out_scaled, demo = demo)
+  hold_out_other_scaled <- combined_data(data = hold_out_other_scaled, demo = demo)
+
   ###Removing column w/ zero variation and no factor variation###
   badcolumns <- clean_cols(df = train_scaled)
-  train_scaled_clean <- train_scaled[ ,!(colnames(train_scaled) %in% c(badcolumns))] 
+  train_scaled <- train_scaled[ ,!(colnames(train_scaled) %in% c(badcolumns))] 
+  
+  ###Saving other_dataframe after scaling 
+  write.csv(hold_out_other_scaled, 
+            paste(paste(featureset, "not", lang, task, sep = "_"), "csv", sep = "."))
+  
+  train_task <- train_scaled %>% filter(condition == task)
+  other_task <- train_scaled %>% filter(condition != task)
+  write.csv(other_task, 
+            paste(paste(featureset, lang, "not", task, sep = "_"), "csv", sep = "."))
   
   ###Lasso looping ###
-  lasso_function(train_data = train_scaled_clean,
+  elastic(train_data = train_task,
                  folds = n_lasso_folds,
                  id_col = "ID",
                  featureset = featureset,
-                 language = language,
+                 language = lang,
                  hold_set = hold_out_scaled,
+                 task = task,
                  demo_set = demo)
   
 }
+```
+
+
+```{r}
+grand_function(feature_dataframe = egemaps_dk, other_dataframe = egemaps_us, demo_dataframe = demodata, lang = "dk", task = "triangles", featureset = "egemaps")
+
+nrow(read.csv("egemaps.dk.not_.triangles.csv"))
+nrow(filter(egemaps_dk, condition != "triangles"))
+
+
+```
+
+Filter out the required story type and make appropriate sets 
+```{r}
+
+###Fill in###
+
 ```
 
 
