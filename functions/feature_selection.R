@@ -11,7 +11,6 @@ elastic <- function(train_data,
     groupdata2::fold(.,
                      k = folds,
                      id_col = id_col)  #new col called .fold
-  
   # pacman::p_load(doMC)
   # registerDoMC(cores = 3)
   # print("trying to make specific hold_out")
@@ -29,7 +28,7 @@ elastic <- function(train_data,
   #for i in nfolds
   feature_list = NULL
   for(i in (1:length(unique(fold_train$.folds)))){
-    print(i)
+    print(paste("now looping through fold", i, sep = " "))
     lasso_train <- fold_train  %>% 
       filter(.folds != i) %>% 
       select(-c(id_col, trial)) #, .folds
@@ -38,9 +37,12 @@ elastic <- function(train_data,
       filter(.folds == i)
     
     ###DEFINING VARIABLES
-    lasso_data <- lasso_train %>% select(-c(story_type,condition, Gender, .folds)) #insert variables to delete here!!!
+    lasso_data <- lasso_train %>% select(-c(story_type,condition, Gender, .folds))
+    print("lasso_data:")
     x <- model.matrix(Diagnosis ~ ., data = lasso_data) #making a matrix from formula
+    print(paste("length of x is ", length(x)))
     y <- lasso_train$Diagnosis #choosing the dependent variable
+    print(paste("length of y is ", length(y)))
     
     #lambdas <- seq(0.0001, 1000, length = 65000)
     
@@ -85,7 +87,5 @@ elastic <- function(train_data,
     lists$fold <- paste(i)
     feature_list <- rbind(feature_list, lists)
   }
-  write.csv(feature_list, paste("elastic_features", featureset, language, task, "csv", sep = "."))
+  write.csv(feature_list, paste(paste("elastic_features", featureset, language, task, sep = "_"),"csv", sep = "."))
 }
-
-#lasso_function(train_scaled, folds = 5, id_col = "ID")

@@ -123,13 +123,13 @@ grand_function <- function(feature_dataframe,
   
   ###Combining demo and feature-set values###
   train_scaled <- combined_data(data = train_scaled, demo = demo)
-  print(train_scaled)
   hold_out_scaled <- combined_data(data = hold_out_scaled, demo = demo)
   hold_out_other_scaled <- combined_data(data = hold_out_other_scaled, demo = demo)
 
   ###Removing column w/ zero variation and no factor variation###
-  badcolumns <- clean_cols(df = train_scaled)
-  train_scaled <- train_scaled[ ,!(colnames(train_scaled) %in% c(badcolumns))] 
+  #badcolumns <- clean_cols(df = train_scaled)
+  #print(badcolumns)
+  #train_scaled <- train_scaled[ ,!(colnames(train_scaled) %in% c(badcolumns))] 
   
   ###Saving other_dataframe after scaling 
   write.csv(hold_out_other_scaled, 
@@ -153,21 +153,102 @@ grand_function <- function(feature_dataframe,
 }
 ```
 
+###Run on combinations
 
+dk, gemaps, stories
 ```{r}
-grand_function(feature_dataframe = egemaps_dk, other_dataframe = egemaps_us, demo_dataframe = demodata, lang = "dk", task = "triangles", featureset = "egemaps")
-
-nrow(read.csv("egemaps.dk.not_.triangles.csv"))
-nrow(filter(egemaps_dk, condition != "triangles"))
-
-
+grand_function(feature_dataframe = gemaps_dk, 
+               other_dataframe = gemaps_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "stories", 
+               featureset = "gemaps")
 ```
 
-Filter out the required story type and make appropriate sets 
+dk, gemaps, triangles
 ```{r}
-
-###Fill in###
-
+grand_function(feature_dataframe = gemaps_dk, 
+               other_dataframe = gemaps_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "triangles", 
+               featureset = "gemaps")
 ```
+
+
+dk, egemaps, stories 
+```{r}
+grand_function(feature_dataframe = egemaps_dk, 
+               other_dataframe = egemaps_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "stories", 
+               featureset = "egemaps")
+```
+
+dk, egemaps, triangles
+```{r}
+grand_function(feature_dataframe = egemaps_dk, 
+               other_dataframe = egemaps_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "triangles", 
+               featureset = "egemaps")
+```
+
+dk, compare, stories 
+```{r}
+grand_function(feature_dataframe = compare_dk, 
+               other_dataframe = compare_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "stories", 
+               featureset = "compare")
+```
+
+dk, compare, triangles 
+```{r}
+grand_function(feature_dataframe = compare_dk, 
+               other_dataframe = compare_us, 
+               demo_dataframe = demodata, 
+               lang = "dk", 
+               task = "triangles", 
+               featureset = "egemaps")
+```
+
+us, gemaps, stories
+```{r}
+grand_function(feature_dataframe = gemaps_us, 
+               other_dataframe = gemaps_dk, 
+               demo_dataframe = demodata, 
+               lang = "us", 
+               task = "stories", 
+               featureset = "gemaps")
+```
+
+us, egemaps, stories
+```{r}
+grand_function(feature_dataframe = egemaps_us, 
+               other_dataframe = egemaps_dk, 
+               demo_dataframe = demodata, 
+               lang = "us", 
+               task = "stories", 
+               featureset = "egemaps")
+```
+
+us, compare, stories 
+```{r}
+grand_function(feature_dataframe = compare_us, 
+               other_dataframe = compare_dk, 
+               demo_dataframe = demodata, 
+               lang = "us",
+               task = "stories", 
+               featureset = "compare")
+```
+
+```{r}
+source("functions/feature_selection.R")
+```
+
 
 
