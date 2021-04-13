@@ -4,7 +4,7 @@ partition_dk <- function(demo, features, hold_size = 0.2, seed = 2021){
   features = features
   set.seed(seed)
   n = round((nrow(demo) * hold_size)/2/2,0)
-  features$ID <- as.numeric(str_extract(features$ID, "[0-9]+"))
+  #features$ID <- as.numeric(str_extract(features$ID, "[0-9]+"))
   male_asd <- demo %>% 
     filter(Gender == "Male") %>% filter(Diagnosis == "ASD") %>% sample_n(n)
   male_td <- demo %>% 
