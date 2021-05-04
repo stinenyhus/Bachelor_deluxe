@@ -1,13 +1,16 @@
 id_wrangling <- function(feature, demo, other, language){
   if (language == "dk"){
+      #Filtering in demo to get correct
       demo <- demo %>% filter(language == "dk")
       
+      #extracting IDs
       feature <- feature %>% 
         mutate(ID = as.character(str_extract(ID, "[0-9]*")))
       
+      #Removing IDs from demo that have no voice data
       demo <- demo %>% subset(ID != "103"& ID != "104"& ID !="105"& ID !="111"& ID !="114")
     
-      #Clean other data
+      ###Clean other data
       other <- other %>% 
         mutate(
           ID = as.character(ID),  #Making ID character
@@ -39,8 +42,10 @@ id_wrangling <- function(feature, demo, other, language){
     
     demo <- demo %>% subset(ID != "103"& ID != "104"& ID !="105"& ID !="111"& ID !="114")
   }
+  #Removing columns that we will not be needing
   feature <- feature %>% select(-c(name, trial, frameTime, X1))
   other <- other %>% select(-c(name, trial, frameTime, X1))
+  #Ensuring that ID is a character
   other$ID <- as.character(other$ID)
   return(list(feature, other, demo))
 }

@@ -1,7 +1,6 @@
 pacman::p_load(tidyverse, readr, glmnet, data.table, broom, forcats, e1071, cvms)
 source("functions/partition_function.R")
 source("functions/Normalize_function.R")
-source("functions/cv_functions.R")
 source("functions/feature_selection.R")
 source("functions/clean_column_function.R")
 source("functions/combine_dfs.R")
@@ -46,7 +45,7 @@ grand_function <- function(features,
   train <- partitions[[2]]
   hold_out <- partitions[[1]]
   
-  #normalizing - scale_function takes min and max of all columns in train and subtracts min from all   values in each columns and divides by max value to get the empirically scaled columns
+  #normalizing - all datasets are normalized according to the train set
   train_scaled <- as.data.frame(
     scale_function(train, datatype = "train"))
   
