@@ -18,6 +18,7 @@ demodata   <- read_csv("DemoData.csv")
 
 dk, stories 
 ```{r}
+source("functions/grand_function.R")
 grand_function(features = egemaps_dk, 
                other_dataframe = egemaps_us, 
                demo = demodata, 
@@ -29,9 +30,9 @@ grand_function(features = egemaps_dk,
 
 dk, triangles
 ```{r}
-grand_function(feature_dataframe = egemaps_dk, 
+grand_function(features = egemaps_dk, 
                other_dataframe = egemaps_us, 
-               demo_dataframe = demodata, 
+               demo = demodata, 
                lang = "dk", 
                task = "triangles", 
                featureset = "egemaps")
@@ -39,9 +40,9 @@ grand_function(feature_dataframe = egemaps_dk,
 
 us, stories
 ```{r}
-grand_function(feature_dataframe = egemaps_us, 
+grand_function(features = egemaps_us, 
                other_dataframe = egemaps_dk, 
-               demo_dataframe = demodata, 
+               demo = demodata, 
                lang = "us", 
                task = "stories", 
                featureset = "egemaps")

@@ -30,7 +30,7 @@ elastic <- function(train_data,
     y <- lasso_train$Diagnosis #choosing the dependent variable
     
     ###FEATURE SELECTION
-    set.seed(2021) #set seed
+    set.seed(1234) #set seed
     cv_lasso <- cv.glmnet(x, 
                           y, 
                           alpha = 0.5, # Setting alpha between 0 and 1 implements elastic
@@ -52,8 +52,10 @@ elastic <- function(train_data,
     # return(cv_lasso) # Do this if you want to get the lambda plot
     
     # #selecting columns to keep in csv file
-    lists <- as.data.frame(lasso_coef$term) 
-    names(lists)[1] <- "features"
+    lists <- data.frame(features = ifelse(str_detect(lasso_coef$term, ".folds") == F,
+                                          lasso_coef$term,
+                                          NA))
+    lists <- subset(lists, !is.na(lists$features))
     lists$fold <- paste(i)
     feature_list <- rbind(feature_list, lists)
   }

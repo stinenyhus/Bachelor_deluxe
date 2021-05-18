@@ -14,7 +14,7 @@ grand_function <- function(features,
                            task,
                            featureset, 
                            n_lasso_folds = 5){
-  set.seed(2021)
+  set.seed(1234)
   
   ###Cleaning the data###
   #Cleaning train data#
@@ -24,10 +24,11 @@ grand_function <- function(features,
   demo <- id_clean[[3]]
   
   #Combining with demo 
-  features <- combined_data(data = features, demo = demo)
-  other_demo <- demo %>% filter(language != lang)
+  own_demo = filter(demo, language == lang)
+  other_demo = filter(demo, language != lang)
+  features <- combined_data(data = features, demo = own_demo)
   other_dataframe <- combined_data(data = other_dataframe, demo = other_demo)
-
+  print(other_dataframe)
   ###relevant task
   features_task <- features %>% filter(condition == task)
   features_other_task <- features %>% filter(condition != task)
@@ -35,11 +36,11 @@ grand_function <- function(features,
   ###partitioning###
   if (lang == "dk"){
     partitions <- partition_dk(features = features_task, 
-                               demo = demo)
+                               demo = own_demo)
   }
   if (lang == "us"){
     partitions <- partition_us(features = features_task,
-                               demo = demo)
+                               demo = own_demo)
   }
   
   train <- partitions[[2]]
@@ -89,6 +90,6 @@ grand_function <- function(features,
           language = lang,
           hold_set = hold_out_scaled,
           task = task,
-          demo_set = demo)
+          demo_set = own_demo)
   
 }
