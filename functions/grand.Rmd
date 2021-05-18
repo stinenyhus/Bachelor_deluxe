@@ -49,3 +49,9 @@ grand_function(features = egemaps_us,
 ```
 
 
+```{r}
+jh = read.csv("egemaps_model_dk_stories_test_on_not_stories.csv")
+jh$Gender
+```
+
+

@@ -1,5 +1,5 @@
 pacman::p_load(tidyverse, readr, glmnet, data.table, broom, forcats, e1071, cvms)
-source("functions/partition_function.R")
+source("functions/new_partitioning.R")
 source("functions/Normalize_function.R")
 source("functions/feature_selection.R")
 source("functions/clean_column_function.R")
@@ -17,7 +17,8 @@ grand_function <- function(features,
   set.seed(1234)
   
   ###Cleaning the data###
-  #Cleaning train data#
+  demo <- demo %>% filter(Gender == "Male")
+  
   id_clean <- id_wrangling(features, demo, other_dataframe, language = lang)
   features <- id_clean[[1]]
   other_dataframe <- id_clean[[2]]
@@ -28,7 +29,6 @@ grand_function <- function(features,
   other_demo = filter(demo, language != lang)
   features <- combined_data(data = features, demo = own_demo)
   other_dataframe <- combined_data(data = other_dataframe, demo = other_demo)
-  print(other_dataframe)
   ###relevant task
   features_task <- features %>% filter(condition == task)
   features_other_task <- features %>% filter(condition != task)
