@@ -23,15 +23,20 @@ grand_function <- function(features,
   features <- id_clean[[1]]
   other_dataframe <- id_clean[[2]]
   demo <- id_clean[[3]]
+
   
   #Combining with demo 
   own_demo = filter(demo, language == lang)
   other_demo = filter(demo, language != lang)
   features <- combined_data(data = features, demo = own_demo)
+
   other_dataframe <- combined_data(data = other_dataframe, demo = other_demo)
+  
   ###relevant task
   features_task <- features %>% filter(condition == task)
+
   features_other_task <- features %>% filter(condition != task)
+
   
   ###partitioning###
   if (lang == "dk"){
@@ -65,31 +70,39 @@ grand_function <- function(features,
                    features_other_task, 
                    datatype = "test"))
   
-  ###Saving dataframe with other language after scaling 
-  write.csv(hold_out_other_scaled, 
-            paste(paste(featureset, "model", lang, task, "test_on", "not", lang, sep = "_"), 
-                  "csv", sep = "."))
-  
-  #Saving dataframe with other task after scaling
-  if (lang == "dk"){
-    write.csv(features_other_task_scaled, 
-              paste(paste(featureset, "model", lang, task, "test_on" , "not", task, sep = "_"), 
+  # ###Saving dataframe with other language after scaling 
+   if (lang == "dk"){
+     write.csv(hold_out_other_scaled, 
+               paste(paste(featureset, "model", lang, task, "test_on", "not", lang, sep = "_"), 
+                     "csv", sep = "."))
+   }
+   if (lang == "us"){
+     hold_out_other_scaled <- hold_out_other_scaled %>% filter(condition == task)
+     write.csv(hold_out_other_scaled, 
+               paste(paste(featureset, "model", lang, task, "test_on", "not", lang, sep = "_"), 
+                     "csv", sep = "."))
+   }
+   
+  # #Saving dataframe with other task after scaling
+   if (lang == "dk"){
+    write.csv(features_other_task_scaled,
+             paste(paste(featureset, "model", lang, task, "test_on" , "not", task, sep = "_"),
                     "csv", sep = "."))
-  }
-  
-  #Saving hold out set from same task
-  write.csv(hold_out_scaled,
+   }
+   
+  # #Saving hold out set from same task
+   write.csv(hold_out_scaled,
             paste(paste(featureset, "model", lang, task, "test_on", lang, task, sep = "_"),
                   "csv", sep = "."))
-  
-  ##Elastic net ###
-  elastic(train_data = train_scaled,
-          folds = n_lasso_folds,
-          id_col = "ID",
+   
+  # # ##Elastic net ###
+   elastic(train_data = train_scaled,
+           folds = n_lasso_folds,
+           id_col = "ID",
           featureset = featureset,
-          language = lang,
-          hold_set = hold_out_scaled,
-          task = task,
-          demo_set = own_demo)
-  
+           language = lang,
+           hold_set = hold_out_scaled,
+           task = task,
+           demo_set = own_demo)
+  #return(features)
 }

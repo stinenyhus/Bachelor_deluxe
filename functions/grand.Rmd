@@ -14,7 +14,8 @@ egemaps_dk <- read_csv("egemaps_dk.csv")
 egemaps_us <- read_csv("egemaps_us.csv")
 demodata   <- read_csv("DemoData.csv")
 ```
-###Run on combinations
+
+###Run on combinations###
 
 dk, stories 
 ```{r}
@@ -46,12 +47,6 @@ grand_function(features = egemaps_us,
                lang = "us", 
                task = "stories", 
                featureset = "egemaps")
-```
-
-
-```{r}
-jh = read.csv("egemaps_model_dk_stories_test_on_not_stories.csv")
-jh$Gender
 ```
 
 
